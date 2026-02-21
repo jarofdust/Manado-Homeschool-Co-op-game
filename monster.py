@@ -14,7 +14,7 @@ class Orc:
             "right": pygame.image.load(os.path.join(base_dir, "RightFacingOrc.png")).convert_alpha(),
             "down": pygame.image.load(os.path.join(base_dir, "FrontFacingOrc.png")).convert_alpha(),
             "up": pygame.image.load(os.path.join(base_dir, "BackFacingOrc.png")).convert_alpha(),
-            "damage": pygame.image.load(os.path.join(base_dir, "DamageOrc.png")).convert_alpha(),
+            "damage": pygame.image.load(os.path.join(base_dir, "HurtOrc.png")).convert_alpha(),
         }
 
         self.direction = "down"
@@ -61,3 +61,4 @@ class Orc:
     def attack(self, target):
         if self.rect.colliderect(target.rect):
             target.take_damage(self.attack_damage)
+

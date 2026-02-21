@@ -3,15 +3,15 @@ import os
 
 class Orc:
     def __init__(self, x, y):
-        self.health = 150
-        self.attack_damage = 50
+        self.health = 100
+        self.attack_damage = 20
         self.speed = 4
 
         base_dir = os.path.dirname(__file__)
 
         self.images = {
-            "left": pygame.image.load(os.path.join(base_dir, "LeftFacingOrc.png")).convert_alpha(),
-            "right": pygame.image.load(os.path.join(base_dir, "RightFacingOrc.png")).convert_alpha(),
+            "left": pygame.image.load(os.path.join(base_dir, "LeftwalkingOrc.png")).convert_alpha(),
+            "right": pygame.image.load(os.path.join(base_dir, "RightwalkingOrc.png")).convert_alpha(),
             "down": pygame.image.load(os.path.join(base_dir, "FrontFacingOrc.png")).convert_alpha(),
             "up": pygame.image.load(os.path.join(base_dir, "BackFacingOrc.png")).convert_alpha(),
         }
@@ -46,3 +46,18 @@ class Orc:
     def attack(self, target):
         if self.rect.colliderect(target.rect):
             target.take_damage(self.attack_damage)
+            running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    screen.fill((30, 30, 30))   # background color
+
+    # draw things here
+    # example:
+    # orc.draw(screen)
+
+    pygame.display.flip()  # 🔥 THIS shows everything on screen
+
+pygame.quit()

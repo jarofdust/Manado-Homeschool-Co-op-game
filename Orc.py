@@ -1,64 +1,45 @@
 import pygame
-import os
+from orc import Orc   #Import the Orc class
 
-class Orc:
-    def __init__(self, x, y):
-        self.health = 100
-        self.attack_damage = 20
-        self.speed = 4
+pygame.init()
 
-        base_dir = os.path.dirname(__file__)
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
 
-        self.images = {
-            "left": pygame.image.load(os.path.join(base_dir, "LeftFacingOrc.png")).convert_alpha(),
-            "right": pygame.image.load(os.path.join(base_dir, "RightFacingOrc.png")).convert_alpha(),
-            "down": pygame.image.load(os.path.join(base_dir, "FrontFacingOrc.png")).convert_alpha(),
-            "up": pygame.image.load(os.path.join(base_dir, "BackFacingOrc.png")).convert_alpha(),
-            "damage": pygame.image.load(os.path.join(base_dir, "HurtOrc.png")).convert_alpha(),
-        }
+#Create the Orc (outside the loop)
+orc = Orc(400, 300)
 
-        self.direction = "down"
-        self.image = self.images[self.direction]
-        self.rect = self.image.get_rect(center=(x, y))
-        self.damaged = False
-        self.damage_timer = 0
-        self.damage_duration = 10  
+running = True
+while running:
+    clock.tick(60)
 
-    def move(self, dx, dy):
-        self.rect.x += dx * self.speed
-        self.rect.y += dy * self.speed
+    # -------- EVENTS --------
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
-        if dx < 0:
-            self.direction = "left"
-        elif dx > 0:
-            self.direction = "right"
-        elif dy < 0:
-            self.direction = "up"
-        elif dy > 0:
-            self.direction = "down"
+    # -------- MOVEMENT --------
+    dx = 0
+    dy = 0
 
-    def update(self):
-        if self.damaged:
-            self.image = self.images["damage"]
-            self.damage_timer -= 1
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_a]:
+        dx = -1
+    if keys[pygame.K_d]:
+        dx = 1
+    if keys[pygame.K_w]:
+        dy = -1
+    if keys[pygame.K_s]:
+        dy = 1
 
-            if self.damage_timer <= 0:
-                self.damaged = False
-        else:
-            self.image = self.images[self.direction]
+    #Move the Orc
+    orc.move(dx, dy)
 
-    def draw(self, surface):
-        surface.blit(self.image, self.rect)
+    # -------- DRAW --------
+    screen.fill((30, 30, 30))
+    orc.draw(screen)
 
-    def take_damage(self, amount):
-        self.health -= amount
-        if self.health < 0:
-            self.health = 0
+    pygame.display.flip()
 
-        self.damaged = True
-        self.damage_timer = self.damage_duration
-
-    def attack(self, target):
-        if self.rect.colliderect(target.rect):
-            target.take_damage(self.attack_damage)
-
+pygame.quit()

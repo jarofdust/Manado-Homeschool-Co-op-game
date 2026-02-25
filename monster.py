@@ -1,63 +1,152 @@
 import pygame
 import os
+import math
 
-class Orc:
+pygame.init()
+screen = pygame.display.set_mode((800, 600))
+clock = pygame.time.Clock()
+
+running = True
+
+
+class Player:
     def __init__(self, x, y):
         self.health = 100
-        self.attack_damage = 20
         self.speed = 4
-
-        base_dir = os.path.dirname(__file__)
-
-        self.images = {
-            "left": pygame.image.load(os.path.join(base_dir, "LeftwalkingOrc.png")).convert_alpha(),
-            "right": pygame.image.load(os.path.join(base_dir, "RightwalkingOrc.png")).convert_alpha(),
-            "down": pygame.image.load(os.path.join(base_dir, "FrontFacingOrc.png")).convert_alpha(),
-            "up": pygame.image.load(os.path.join(base_dir, "BackFacingOrc.png")).convert_alpha(),
-        }
-
-        self.direction = "down"
-        self.image = self.images[self.direction]
+        self.image = pygame.Surface((50, 50))
+        self.image.fill((0, 200, 255))
         self.rect = self.image.get_rect(center=(x, y))
 
-    def move(self, dx, dy):
-        if dx < 0:
-            self.direction = "left"
-        elif dx > 0:
-            self.direction = "right"
-        elif dy < 0:
-            self.direction = "up"
-        elif dy > 0:
-            self.direction = "down"
-
-        self.image = self.images[self.direction]
-
-        self.rect.x += dx * self.speed
-        self.rect.y += dy * self.speed
-
-    def draw(self, surface):
-        surface.blit(self.image, self.rect)
+    def move(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a]:
+            self.rect.x -= self.speed
+        if keys[pygame.K_d]:
+            self.rect.x += self.speed
+        if keys[pygame.K_w]:
+            self.rect.y -= self.speed
+        if keys[pygame.K_s]:
+            self.rect.y += self.speed
 
     def take_damage(self, amount):
         self.health -= amount
         if self.health < 0:
             self.health = 0
 
-    def attack(self, target):
-        if self.rect.colliderect(target.rect):
-            target.take_damage(self.attack_damage)
-            running = True
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+
+class Orc:
+    def __init__(self, x, y, player):
+        self.player = player
+        self.health = 100
+        self.attack_damage = 10
+        self.speed = 2
+
+        base_dir = os.getcwd()
+
+        def load_orc_image(name, color):
+            path = os.path.join(base_dir, name)
+            if os.path.exists(path):
+                return pygame.image.load(path).convert_alpha()
+            s = pygame.Surface((60, 60))
+            s.fill(color)
+            return s
+
+        self.images = {
+            "left": load_orc_image("LeftFacingOrc.png", (255, 0, 0)),
+            "right": load_orc_image("RightFacingOrc.png", (0, 255, 0)),
+            "down": load_orc_image("FrontFacingOrc.png", (0, 0, 255)),
+            "up": load_orc_image("BackFacingOrc.png", (255, 255, 0)),
+            "damage": load_orc_image("DamageOrc.png", (255, 0, 255)),
+        }
+
+        self.direction = "down"
+        self.image = self.images[self.direction]
+        self.rect = self.image.get_rect(center=(x, y))
+
+        self.damaged = False
+        self.damage_timer = 0
+        self.damage_duration = 15
+        self.attack_cooldown = 60
+        self.attack_timer = 0
+
+    def chase(self):
+        dx = self.player.rect.centerx - self.rect.centerx
+        dy = self.player.rect.centery - self.rect.centery
+        distance = math.hypot(dx, dy)
+
+        if distance != 0:
+            dx /= distance
+            dy /= distance
+            self.rect.x += dx * self.speed
+            self.rect.y += dy * self.speed
+
+        if abs(dx) > abs(dy):
+            self.direction = "right" if dx > 0 else "left"
+        else:
+            self.direction = "down" if dy > 0 else "up"
+
+    def attack(self):
+        if self.rect.colliderect(self.player.rect) and self.attack_timer <= 0:
+            self.player.take_damage(self.attack_damage)
+            self.attack_timer = self.attack_cooldown
+
+    def take_damage(self, amount):
+        self.health -= amount
+        self.damaged = True
+        self.damage_timer = self.damage_duration
+
+        dx = self.rect.centerx - self.player.rect.centerx
+        dy = self.rect.centery - self.player.rect.centery
+        distance = math.hypot(dx, dy)
+
+        if distance != 0:
+            dx /= distance
+            dy /= distance
+            self.rect.x += dx * 5
+            self.rect.y += dy * 5
+
+    def update(self):
+        if self.attack_timer > 0:
+            self.attack_timer -= 1
+
+        self.chase()
+        self.attack()
+
+        if self.damaged:
+            self.image = self.images["damage"]
+            self.damage_timer -= 1
+            if self.damage_timer <= 0:
+                self.damaged = False
+        else:
+            self.image = self.images[self.direction]
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+
+player = Player(200, 300)
+orc = Orc(500, 300, player)
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    screen.fill((30, 30, 30))   # background color
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                orc.take_damage(20)
 
-    # draw things here
-    # example:
-    # orc.draw(screen)
+    player.move()
+    orc.update()
 
-    pygame.display.flip()  # 🔥 THIS shows everything on screen
+    screen.fill((0, 0, 0))
+    player.draw(screen)
+    orc.draw(screen)
+
+    pygame.display.flip()
+    clock.tick(60)
 
 pygame.quit()

@@ -1,5 +1,5 @@
 import pygame
-from orc import Orc   #Import the Orc class
+from orc import Orc 
 
 pygame.init()
 
@@ -7,19 +7,16 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
-#Create the Orc (outside the loop)
 orc = Orc(400, 300)
 
 running = True
 while running:
     clock.tick(60)
 
-    # -------- EVENTS --------
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # -------- MOVEMENT --------
     dx = 0
     dy = 0
 
@@ -33,13 +30,12 @@ while running:
     if keys[pygame.K_s]:
         dy = 1
 
-    #Move the Orc
     orc.move(dx, dy)
-
-    # -------- DRAW --------
+    
     screen.fill((30, 30, 30))
     orc.draw(screen)
 
     pygame.display.flip()
 
 pygame.quit()
+

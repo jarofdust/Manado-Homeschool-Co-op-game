@@ -72,6 +72,9 @@ class Orc:
         self.attack_cooldown = 60
         self.attack_timer = 0
 
+        self.knockback_x = 0
+        self.knockback_y = 0
+
     def chase(self):
         dx = self.player.rect.centerx - self.rect.centerx
         dy = self.player.rect.centery - self.rect.centery
@@ -94,6 +97,9 @@ class Orc:
             self.attack_timer = self.attack_cooldown
 
     def take_damage(self, amount):
+        if self.knockback_x != 0 or self.knockback_y != 0:
+            return
+
         self.health -= amount
         self.damaged = True
         self.damage_timer = self.damage_duration
@@ -105,22 +111,35 @@ class Orc:
         if distance != 0:
             dx /= distance
             dy /= distance
-            self.rect.x += dx * 5
-            self.rect.y += dy * 5
+            self.knockback_x = dx * 8
+            self.knockback_y = dy * 8
 
     def update(self):
         if self.attack_timer > 0:
             self.attack_timer -= 1
 
-        self.chase()
-        self.attack()
+        if self.knockback_x != 0 or self.knockback_y != 0:
+            self.rect.x += self.knockback_x
+            self.rect.y += self.knockback_y
+            self.knockback_x *= 0.7
+            self.knockback_y *= 0.7
 
-        if self.damaged:
+            if abs(self.knockback_x) < 0.5:
+                self.knockback_x = 0
+            if abs(self.knockback_y) < 0.5:
+                self.knockback_y = 0
+
+            self.image = self.images["damage"]
+
+        elif self.damaged:
             self.image = self.images["damage"]
             self.damage_timer -= 1
             if self.damage_timer <= 0:
                 self.damaged = False
+
         else:
+            self.chase()
+            self.attack()
             self.image = self.images[self.direction]
 
     def draw(self, surface):
@@ -130,6 +149,8 @@ class Orc:
 player = Player(200, 300)
 orc = Orc(500, 300, player)
 
+attack_range = 2
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -137,7 +158,12 @@ while running:
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                orc.take_damage(20)
+                dx = player.rect.centerx - orc.rect.centerx
+                dy = player.rect.centery - orc.rect.centery
+                distance = math.hypot(dx, dy)
+
+                if distance <= attack_range:
+                    orc.take_damage(10)
 
     player.move()
     orc.update()
@@ -150,3 +176,4 @@ while running:
     clock.tick(60)
 
 pygame.quit()
+

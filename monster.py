@@ -28,9 +28,9 @@ class Player:
             return s
 
         self.images = {
-            "player": load_player_image("assets/Characters/red_knight.png", (0, 255, 255)),
-            "player_punching": load_player_image("assets/Characters/punching_red_knight.png", (0, 255, 255)),
-            "player_jumping": load_player_image("assets/Characters/jumping_red_knight.png", (0, 255, 255)),
+            "player": load_player_image("red_knight.png", (0, 255, 255)),
+            "player_punching": load_player_image("punching_red_knight.png", (0, 255, 255)),
+            "player_jumping": load_player_image("jumping_red_knight.png", (0, 255, 255)),
         }
         self.current_image = self.images["player"]
 
@@ -57,10 +57,9 @@ class Player:
 class Orc:
     def __init__(self, x, y, player):
         self.player = player
-        self.health = 100
+        self.health = 50
         self.attack_damage = 10
         self.speed = 2
-
         self.x = float(x)
         self.y = float(y)
 
@@ -75,10 +74,10 @@ class Orc:
             return s
 
         self.images = {
-            "left": load_orc_image("LeftFacingOrc.png", (255, 0, 0)),
+            "left": load_orc_image("LeftFacingOrc.png", (0, 255, 0)),
             "right": load_orc_image("RightFacingOrc.png", (0, 255, 0)),
             "down": load_orc_image("FrontFacingOrc.png", (0, 0, 255)),
-            "up": load_orc_image("BackFacingOrc.png", (255, 255, 0)),
+            "up": load_orc_image("BackFacingOrc.png", (0, 255, 255)),
             "damage": load_orc_image("DamageOrc.png", (255, 0, 255)),
         }
 
@@ -92,8 +91,8 @@ class Orc:
         self.attack_cooldown = 60
         self.attack_timer = 0
 
-        self.knockback_x = 0
-        self.knockback_y = 0
+        self.knockback_x = 1
+        self.knockback_y = 1
 
     def chase(self):
         dx = self.player.rect.centerx - self.x
@@ -159,7 +158,8 @@ class Orc:
             self.attack()
             self.image = self.images[self.direction]
 
-        self.rect.center = (int(self.x), int(self.y))
+        center = (int(self.x), int(self.y))
+        self.rect = self.image.get_rect(center=center)
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)

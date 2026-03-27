@@ -78,7 +78,7 @@ class Orc:
             "right": load_orc_image("RightFacingOrc.png", (0, 255, 0)),
             "down": load_orc_image("FrontFacingOrc.png", (0, 0, 255)),
             "up": load_orc_image("BackFacingOrc.png", (0, 255, 255)),
-            "damage": load_orc_image("DamageOrc.png", (255, 0, 255)),
+            "damage": load_orc_image("HurtOrc.png", (255, 0, 255)),
         }
 
         self.direction = "down"
